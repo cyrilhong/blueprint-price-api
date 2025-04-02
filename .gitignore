@@ -62,7 +62,7 @@ log/
 
 # 模型檔案（根據需求決定是否要忽略）
 # models/
-*.pkl
+# *.pkl
 *.joblib
 *.h5
 
