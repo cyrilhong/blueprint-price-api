@@ -25,38 +25,39 @@ def safe_divide(a, b, fill_value=0):
 def process_features(df):
     """處理輸入特徵，與訓練時保持一致"""
     # 確保數值欄位是數值型態
-    numeric_cols = ['長度', '寬度', '高度', '靜壓mmAq', '馬力HP', 
-                   '風量NCMM', '操作溫度°C', '採購數量', '葉輪直徑mm',
-                   '風量效率', '功率密度']
+    numeric_cols = [
+        '長度', '寬度', '高度', '靜壓mmAq', '馬力HP', 
+        '風量NCMM', '操作溫度°C', '採購數量'  # 移除總金額
+    ]
     
+    # 處理數值欄位
     for col in numeric_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors='coerce')
+            if col in ['長度', '寬度', '高度']:
+                df[col] = df[col].fillna(0)
+            else:
+                df[col] = df[col].fillna(df[col].median() if not df[col].empty else 0)
     
-    # 計算體積
+    # 計算衍生特徵
     df['體積'] = df['長度'] * df['寬度'] * df['高度']
+    df['功率密度'] = np.where(df['體積'] > 0, df['馬力HP'] / df['體積'], 0)
+    df['風量效率'] = np.where(df['馬力HP'] > 0, df['風量NCMM'] / df['馬力HP'], 0)
+    df['壓力效率'] = np.where(df['馬力HP'] > 0, df['靜壓mmAq'] / df['馬力HP'], 0)
+    df['長寬比'] = np.where(df['寬度'] > 0, df['長度'] / df['寬度'], 0)
+    df['高寬比'] = np.where(df['寬度'] > 0, df['高度'] / df['寬度'], 0)
     
-    # 基本特徵
-    df['型號'] = df['品名'] + '_' + df['規格']  # 創建型號
-    df['機殼材質'] = df['材質']  # 使用材質作為機殼材質
-    df['架台材質'] = df['材質']  # 使用材質作為架台材質
+    # 確保類別特徵是字串類型
+    categorical_cols = [
+        "型號", "規格", "出口⽅向", "機殼材質", "架台材質", 
+        "產品名稱", "驅動方式", "防火花級", "單雙吸",
+        "風機等級"
+    ]
     
-    # 效率相關特徵
-    df['壓力效率'] = safe_divide(df['靜壓mmAq'], df['馬力HP'])
-    
-    # 尺寸比例特徵
-    df['長寬比'] = safe_divide(df['長度'], df['寬度'])
-    df['高寬比'] = safe_divide(df['高度'], df['寬度'])
-    
-    # 確保所有必要的特徵都存在
-    if '葉輪直徑mm' not in df.columns:
-        df['葉輪直徑mm'] = 500  # 設定預設值
-    if '功率密度' not in df.columns:
-        df['功率密度'] = 0.00001  # 設定預設值
-    if '風量效率' not in df.columns:
-        df['風量效率'] = 20  # 設定預設值
-    if '總金額' not in df.columns:
-        df['總金額'] = 50000  # 設定預設值
+    for col in categorical_cols:
+        if col in df.columns:
+            df[col] = df[col].astype(str)
+            df[col] = df[col].fillna('未知')
     
     return df
 
@@ -89,10 +90,20 @@ def predict():
         return jsonify({
             '預測價格': f"{predicted_price:,.2f} 元",
             '輸入資料摘要': {
-                '尺寸': f"{filtered_data['長度']}x{filtered_data['寬度']}x{filtered_data['高度']} mm",
-                '馬力': f"{filtered_data['馬力HP']} HP",
-                '風量': f"{filtered_data['風量NCMM']} NCMM",
-                '靜壓': f"{filtered_data['靜壓mmAq']} mmAq"
+                '基本資訊': {
+                    '尺寸': f"{filtered_data.get('長度')}x{filtered_data.get('寬度')}x{filtered_data.get('高度')} mm",
+                    '規格': filtered_data.get('規格', '未知'),
+                    '出口方向': filtered_data.get('出口⽅向', '未知')
+                },
+                '性能參數': {
+                    '馬力': f"{filtered_data.get('馬力HP', '0')} HP",
+                    '風量': f"{filtered_data.get('風量NCMM', '0')} NCMM",
+                    '靜壓': f"{filtered_data.get('靜壓mmAq', '0')} mmAq"
+                },
+                '材質資訊': {
+                    '機殼材質': filtered_data.get('機殼材質', '未知'),
+                    '架台材質': filtered_data.get('架台材質', '未知')
+                }
             }
         })
         
@@ -107,6 +118,6 @@ def predict():
             }
         }), 500
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
