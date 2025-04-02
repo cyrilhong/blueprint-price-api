@@ -1,0 +1,11 @@
+Flask==2.0.3
+gunicorn==21.2.0
+scikit-learn==1.0.2
+pandas==1.5.3
+numpy==1.23.5
+flask-cors==3.0.10
+category-encoders==2.4.0
+google-cloud-storage==3.1.0
+werkzeug==2.0.3
+scipy==1.7.3
+pycaret==2.3.10

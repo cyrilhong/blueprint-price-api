@@ -1,0 +1,89 @@
+# Python 環境相關
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虛擬環境
+venv/
+ENV/
+.env
+.venv
+blueprint-api/
+blueprint-api-x86/
+blueprint-api-new/
+blueprint-api-env/
+
+# pip 相關環境
+blueprint-api-env/bin/
+blueprint-api-env/include/
+blueprint-api-env/lib/
+blueprint-api-env/pyvenv.cfg
+pip/
+pip3/
+pip3.10/
+python/
+python3/
+python3.10/
+
+# Conda 環境
+.conda/
+/anaconda*/
+/miniconda*/
+
+# IDE 相關
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# 日誌檔案
+*.log
+logs/
+log/
+
+# 模型檔案（根據需求決定是否要忽略）
+# models/
+*.pkl
+*.joblib
+*.h5
+
+# Google Cloud 相關
+*.json
+.gcloud/
+.gsutil/
+
+# 其他
+.coverage
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.tox/
+.coverage.*
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# 系統檔案
+.DS_Store
+Thumbs.db 

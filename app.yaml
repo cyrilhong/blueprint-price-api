@@ -1,0 +1,26 @@
+runtime: python39
+instance_class: F4
+
+handlers:
+- url: /.*
+  script: auto
+
+env_variables:
+  PORT: 8080
+
+entrypoint: gunicorn -b :$PORT --workers 1 --timeout 600 api:app
+
+automatic_scaling:
+  target_cpu_utilization: 0.65
+  max_instances: 10
+  min_instances: 1
+  min_idle_instances: 1
+  max_concurrent_requests: 50
+
+readiness_check:
+  path: "/"
+  check_interval_sec: 30
+  timeout_sec: 10
+  failure_threshold: 4
+  success_threshold: 2
+  app_start_timeout_sec: 600
