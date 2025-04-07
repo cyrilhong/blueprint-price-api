@@ -6,6 +6,13 @@ import numpy as np
 import traceback
 from flask_cors import CORS
 import os
+from dotenv import load_dotenv
+
+# 根據環境載入不同的 .env 檔案
+if os.environ.get('ENV') == 'production':
+    load_dotenv('.env.production')
+else:
+    load_dotenv('.env.local')
 
 # 設置日誌
 logging.basicConfig(level=logging.DEBUG)
@@ -27,7 +34,7 @@ def process_features(df):
     # 確保數值欄位是數值型態
     numeric_cols = [
         '長度', '寬度', '高度', '靜壓mmAq', '馬力HP', 
-        '風量NCMM', '操作溫度°C', '採購數量'  # 移除總金額
+        '風量NCMM', '操作溫度°C', '採購數量'
     ]
     
     # 處理數值欄位
@@ -49,7 +56,7 @@ def process_features(df):
     
     # 確保類別特徵是字串類型
     categorical_cols = [
-        "型號", "規格", "出口⽅向", "機殼材質", "架台材質", 
+        "系列", "型號", "出口⽅向", "機殼材質", "架台材質",  # 移除 "規格"
         "產品名稱", "驅動方式", "防火花級", "單雙吸",
         "風機等級"
     ]
@@ -58,6 +65,10 @@ def process_features(df):
         if col in df.columns:
             df[col] = df[col].astype(str)
             df[col] = df[col].fillna('未知')
+    
+    # 如果需要將 "型號" 映射為 "規格"，在這裡處理
+    if '型號' in df.columns:
+        df['規格'] = df['型號']  # 新增這行，確保模型可以找到 "規格" 欄位
     
     return df
 
@@ -119,5 +130,5 @@ def predict():
         }), 500
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
+    port = int(os.environ.get('PORT', 8081))
     app.run(host='0.0.0.0', port=port)
