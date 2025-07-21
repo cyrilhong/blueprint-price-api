@@ -1,1 +1,1 @@
-web: gunicorn api:app 
+web: gunicorn --bind 0.0.0.0:8081 api:app 
